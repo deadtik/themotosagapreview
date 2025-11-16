@@ -1,0 +1,87 @@
+{
+  "summary": {
+    "passed": 11,
+    "failed": 0,
+    "success_rate": 100.0,
+    "critical_failures": []
+  },
+  "detailed_results": [
+    {
+      "test": "Admin Signup",
+      "success": true,
+      "message": "Admin user created successfully with ID: db4ed26e-eb93-408d-b011-798637da5964",
+      "details": null,
+      "timestamp": "2025-11-15T10:22:41.573892"
+    },
+    {
+      "test": "Rider Signup",
+      "success": true,
+      "message": "Rider user created successfully with ID: 18117616-f667-4ec8-9446-7278fdd4382d",
+      "details": null,
+      "timestamp": "2025-11-15T10:22:42.260258"
+    },
+    {
+      "test": "Admin Event Creation",
+      "success": true,
+      "message": "Event created successfully with ID: 76a20f54-1edd-46d9-ba26-defa71ffff09",
+      "details": "All required fields present: ['id', 'title', 'description', 'date', 'location', 'eventType']",
+      "timestamp": "2025-11-15T10:22:42.833354"
+    },
+    {
+      "test": "Rider Event Creation (Should Fail)",
+      "success": true,
+      "message": "Correctly blocked rider from creating events with 403",
+      "details": "Error message: Only administrators can create events",
+      "timestamp": "2025-11-15T10:22:43.747070"
+    },
+    {
+      "test": "Story Creation",
+      "success": true,
+      "message": "Story created successfully with ID: 84d15485-1615-4ce0-8214-8147882e938f",
+      "details": null,
+      "timestamp": "2025-11-15T10:22:44.316655"
+    },
+    {
+      "test": "Admin Delete Story",
+      "success": true,
+      "message": "Admin successfully deleted story from another user",
+      "details": "Response: {'message': 'Story deleted'}",
+      "timestamp": "2025-11-15T10:22:44.874400"
+    },
+    {
+      "test": "Admin Delete Event",
+      "success": true,
+      "message": "Admin successfully deleted event",
+      "details": "Response: {'message': 'Event deleted'}",
+      "timestamp": "2025-11-15T10:22:45.429704"
+    },
+    {
+      "test": "Admin Stats",
+      "success": true,
+      "message": "Admin stats retrieved successfully",
+      "details": "Stats: Users=12, Stories=3, Events=1",
+      "timestamp": "2025-11-15T10:22:45.990986"
+    },
+    {
+      "test": "Rider Stats (Should Fail)",
+      "success": true,
+      "message": "Correctly blocked rider from accessing admin stats",
+      "details": null,
+      "timestamp": "2025-11-15T10:22:46.558105"
+    },
+    {
+      "test": "RSVP Functionality",
+      "success": true,
+      "message": "RSVP functionality working correctly",
+      "details": "User 18117616-f667-4ec8-9446-7278fdd4382d successfully RSVPed to event 7640ccad-9bdb-4568-a36d-edc42742656c",
+      "timestamp": "2025-11-15T10:22:47.160219"
+    },
+    {
+      "test": "Like Functionality",
+      "success": true,
+      "message": "Like functionality working correctly",
+      "details": "User 18117616-f667-4ec8-9446-7278fdd4382d successfully liked story 4a792434-d9eb-4317-9856-b43dea97ab99",
+      "timestamp": "2025-11-15T10:22:47.761279"
+    }
+  ]
+}
