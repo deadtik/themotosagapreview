@@ -48,8 +48,8 @@ import {
 } from '../../../backend/controllers/adminController.js';
 
 // GET Handler
-export async function GET(request: NextRequest, { params }: { params: { path?: string[] } }) {
-  const { path: routePath = [] } = params || {};
+export async function GET(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
+  const { path: routePath = [] } = await params || {};
   const pathString = routePath.join('/');
 
   try {
@@ -138,8 +138,8 @@ export async function GET(request: NextRequest, { params }: { params: { path?: s
 }
 
 // POST Handler
-export async function POST(request: NextRequest, { params }: { params: { path?: string[] } }) {
-  const { path: routePath = [] } = params || {};
+export async function POST(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
+  const { path: routePath = [] } = await params || {};
   const pathString = routePath.join('/');
 
   try {
@@ -239,8 +239,8 @@ export async function POST(request: NextRequest, { params }: { params: { path?: 
 }
 
 // PUT Handler
-export async function PUT(request: NextRequest, { params }: { params: { path?: string[] } }) {
-  const { path: routePath = [] } = params || {};
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
+  const { path: routePath = [] } = await params || {};
   const pathString = routePath.join('/');
 
   try {
@@ -262,8 +262,8 @@ export async function PUT(request: NextRequest, { params }: { params: { path?: s
 }
 
 // DELETE Handler
-export async function DELETE(request: NextRequest, { params }: { params: { path?: string[] } }) {
-  const { path: routePath = [] } = params || {};
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
+  const { path: routePath = [] } = await params || {};
   const pathString = routePath.join('/');
 
   try {
