@@ -15,6 +15,13 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { Heart, MessageCircle, Calendar, MapPin, Users, Plus, LogOut, User, Bike, Sparkles, ChevronRight, Settings, Trash2, ShieldCheck, DollarSign, UserCog, Newspaper, Handshake, Moon, Sun } from 'lucide-react';
+import { ParallaxSection } from '@/components/parallax/parallax-section';
+import { ScrollReveal } from '@/components/parallax/scroll-reveal';
+import { FloatingElement } from '@/components/parallax/floating-element';
+import { ParallaxMouse } from '@/components/parallax/parallax-mouse';
+import { VideoBackground } from '@/components/ui/video-background';
+import { useTheme } from '@/components/providers/theme-provider';
+import { useAuth } from '@/components/providers/auth-provider';
 
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_motocommunity/artifacts/tt95bhwq_image.png';
 
@@ -59,15 +66,12 @@ const BRAND_PARTNERS = [
 ];
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const { darkMode } = useTheme();
+  const { user, token, showAuthDialog, setShowAuthDialog, authMode, setAuthMode, login, logout, updateUser } = useAuth();
   const [stories, setStories] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('stories');
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
   const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
 
@@ -108,35 +112,8 @@ export default function App() {
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [adminStats, setAdminStats] = useState<any>(null);
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
-  };
-
-  const fetchCurrentUser = async (authToken: string) => {
-    try {
-      const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${authToken}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
-        setProfileForm({
-          name: data.name,
-          bio: data.bio || '',
-          bikeInfo: data.bikeInfo || '',
-          clubInfo: data.clubInfo || ''
-        });
-      } else {
-        localStorage.removeItem('token');
-        setToken(null);
-      }
-    } catch (error) {
-      console.error('Error fetching user:', error);
-    }
-  };
+  // Toggle dark mode logic removed (handled globally)
+  // User fetching logic removed (handled globally)
 
   const fetchStories = async () => {
     try {
@@ -166,7 +143,7 @@ export default function App() {
     setLoading(true);
     try {
       const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
-      const body = authMode === 'login' 
+      const body = authMode === 'login'
         ? { email: authForm.email, password: authForm.password }
         : authForm;
 
@@ -177,12 +154,9 @@ export default function App() {
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem('token', data.token);
-        setShowAuthDialog(false);
+        login(data.token, data.user);
         toast({
           title: 'Welcome to the Saga!',
           description: authMode === 'login' ? 'Good to see you back, rider!' : 'Your journey begins now!'
@@ -213,13 +187,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-    toast({
-      title: 'Ride safe!',
-      description: 'You\'ve been logged out'
-    });
+    logout();
   };
 
   const handleFileUpload = async (e: any) => {
@@ -418,7 +386,7 @@ export default function App() {
 
       if (res.ok) {
         const data = await res.json();
-        setUser(data);
+        updateUser(data);
         setShowProfileDialog(false);
         toast({
           title: 'Profile updated!',
@@ -494,17 +462,9 @@ export default function App() {
   // Load dark mode preference - fix hydration error
   useEffect(() => {
     setMounted(true);
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedDarkMode);
   }, []);
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-      fetchCurrentUser(savedToken);
-    }
-  }, []);
+  // Token effect removed (handled globally)
 
   useEffect(() => {
     if (token) {
@@ -526,165 +486,132 @@ export default function App() {
     return (
       <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-zinc-950 via-red-950/30 to-zinc-950' : 'bg-gradient-to-br from-stone-200 via-amber-50 to-stone-100'}`}>
         <Toaster />
-        
+
         {/* Navigation */}
-        <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur border-b ${darkMode ? 'bg-zinc-950/95 border-amber-900/30' : 'bg-stone-100/95 border-stone-300/50'}`}>
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-full overflow-hidden border-2 ${darkMode ? 'bg-amber-900/20 border-amber-600' : 'bg-stone-100 border-blue-500'}`}>
-                <img src={LOGO_URL} alt="The Moto Saga" className="w-full h-full object-cover" />
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={toggleDarkMode}
-                className={darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-stone-700 hover:text-stone-900'}
-              >
-                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </Button>
 
-              {/* ABOUT & CONTACT LINKS ADDED */}
-              <Link href="/About" legacyBehavior>
-                <Button 
-                  variant="ghost" 
-                  className={`font-semibold ${darkMode ? 'text-amber-100 hover:text-amber-400' : 'text-stone-700 hover:text-blue-600'}`}
-                >
-                  About Us
-                </Button>
-              </Link>
-
-              <Link href="/Contact" legacyBehavior>
-                <Button 
-                  variant="ghost" 
-                  className={`font-semibold ${darkMode ? 'text-amber-100 hover:text-amber-400' : 'text-stone-700 hover:text-blue-600'}`}
-                >
-                  Contact
-                </Button>
-              </Link>
-
-              {/* EVENTS LINK */}
-              <Link href="/events" legacyBehavior>
-                <Button 
-                  variant="ghost" 
-                  className={`font-semibold ${darkMode ? 'text-amber-100 hover:text-amber-400' : 'text-stone-700 hover:text-blue-600'}`}
-                >
-                  Events
-                </Button>
-              </Link>
-
-              <Button 
-                variant="ghost" 
-                className={`font-semibold ${darkMode ? 'text-amber-100 hover:text-amber-400' : 'text-stone-700 hover:text-blue-600'}`}
-                onClick={() => { setAuthMode('login'); setShowAuthDialog(true); }}
-              >
-                Sign In
-              </Button>
-              <Button 
-                className={`font-bold px-6 shadow-lg ${darkMode ? 'bg-gradient-to-r from-amber-600 to-red-700 hover:from-amber-700 hover:to-red-800 shadow-amber-900/50' : 'bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 shadow-blue-900/50'} text-white`}
-                onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
-              >
-                Join Now
-              </Button>
-            </div>
-          </div>
-        </nav>
 
         {/* Hero Section */}
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-          <div className={`absolute inset-0 pointer-events-none ${darkMode ? 'bg-gradient-to-br from-red-950/20 via-zinc-950/50 to-amber-950/20' : 'bg-gradient-to-br from-blue-100/30 via-stone-50/50 to-red-100/30'}`} />
-          <div className="absolute inset-0 pointer-events-none" style={{
-            backgroundImage: darkMode 
-              ? 'radial-gradient(circle at 2px 2px, rgba(251, 191, 36, 0.03) 1px, transparent 0)'
-              : 'radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.05) 1px, transparent 0)',
+          {/* Video Background */}
+          <VideoBackground
+            videoSrc="/landingpagevideo.mp4"
+            overlayOpacity={darkMode ? 0.7 : 0.6}
+            className="z-0"
+          />
+
+          {/* Parallax Gradient Overlay */}
+          <ParallaxSection speed={0.3} className="absolute inset-0 pointer-events-none z-10">
+            <div className={`absolute inset-0 ${darkMode ? 'bg-gradient-to-br from-red-950/30 via-transparent to-amber-950/30' : 'bg-gradient-to-br from-blue-100/20 via-transparent to-red-100/20'}`} />
+          </ParallaxSection>
+
+          {/* Dot Pattern Overlay */}
+          <div className="absolute inset-0 pointer-events-none z-10" style={{
+            backgroundImage: darkMode
+              ? 'radial-gradient(circle at 2px 2px, rgba(251, 191, 36, 0.05) 1px, transparent 0)'
+              : 'radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.08) 1px, transparent 0)',
             backgroundSize: '40px 40px'
           }} />
-          
-          <div className="relative z-10 text-center px-4 max-w-6xl">
-            <div className="mb-8">
-              <div className={`w-40 h-40 rounded-full overflow-hidden border-4 mx-auto mb-8 shadow-2xl ${darkMode ? 'bg-amber-900/20 border-amber-600 shadow-amber-900/50' : 'bg-stone-100 border-blue-500 shadow-blue-900/50'}`}>
-                <img src={LOGO_URL} alt="The Moto Saga" className="w-full h-full object-cover" />
-              </div>
-            </div>
 
-            <h1 className={`text-6xl md:text-8xl font-black mb-6 tracking-tight leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
-              EVERYONE <span className={`bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}>AS ONE</span>
-            </h1>
-            
-            <div className="max-w-3xl mx-auto space-y-4 mb-12">
-              <p className={`text-2xl md:text-3xl font-light ${darkMode ? 'text-amber-100' : 'text-stone-700'}`}>
-                No barriers. No cage. No judgement. No hate.
-              </p>
-              <p className={`text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                You can come from any land, with any bike. What matters is that you ride, you're here.
-              </p>
-            </div>
-            
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Button 
-                size="lg" 
-                className={`font-bold px-10 py-7 text-xl font-black uppercase shadow-xl transition-all hover:scale-105 ${darkMode ? 'bg-gradient-to-r from-amber-600 to-blue-700 hover:from-amber-700 hover:to-blue-800 shadow-amber-900/50' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-900/50'} text-white`}
-                onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
-              >
-                Turn Up <ChevronRight className="ml-2" />
-              </Button>
-            </div>
+          <div className="relative z-20 text-center px-4 max-w-6xl">
+            <ScrollReveal direction="down" scale blur>
+              <div className="mb-8">
+                <ParallaxMouse strength={15}>
+                  <FloatingElement duration={4} yOffset={15}>
+                    <div className={`w-40 h-40 rounded-full overflow-hidden border-4 mx-auto mb-8 shadow-2xl ${darkMode ? 'bg-amber-900/20 border-amber-600 shadow-amber-900/50' : 'bg-stone-100 border-blue-500 shadow-blue-900/50'}`}>
+                      <img src={LOGO_URL} alt="The Moto Saga" className="w-full h-full object-cover" />
+                    </div>
+                  </FloatingElement>
+                </ParallaxMouse>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.2} scale>
+              <h1 className={`text-6xl md:text-8xl font-black mb-6 tracking-tight leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
+                THE PULSE OF <span className={`bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}> MOTORCYCLING</span>
+              </h1>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.4}>
+              <div className="max-w-3xl mx-auto space-y-4 mb-12">
+                <p className={`text-2xl md:text-3xl font-light ${darkMode ? 'text-amber-100' : 'text-stone-700'}`}>
+                  Your journey. Your stories. Your tribe.
+                </p>
+                <p className={`text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
+                  The ultimate digital home for every rider. Connect, share, and ride as one.
+                </p>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.6} scale>
+              <div className="flex gap-4 justify-center flex-wrap">
+                <Button
+                  size="lg"
+                  className={`font-bold px-10 py-7 text-xl font-black uppercase shadow-xl transition-all hover:scale-105 ${darkMode ? 'bg-gradient-to-r from-amber-600 to-blue-700 hover:from-amber-700 hover:to-blue-800 shadow-amber-900/50' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-900/50'} text-white`}
+                  onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
+                >
+                  Start Your Saga <ChevronRight className="ml-2" />
+                </Button>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
 
         {/* Latest Events Section */}
         <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-red-950/20 border-amber-900/30' : 'bg-gradient-to-br from-stone-100 to-amber-50 border-stone-300/50'}`}>
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-12">
-              <div>
-                <h2 className={`text-5xl font-black mb-2 uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Upcoming Events</h2>
-                <p className={`text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>Join the rides and meetups</p>
+            <ScrollReveal direction="up" scale>
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <h2 className={`text-5xl font-black mb-2 uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Upcoming Events</h2>
+                  <p className={`text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>Join the rides and meetups</p>
+                </div>
+                <div className="hidden md:flex items-center gap-3">
+                  <Link href="/events" legacyBehavior>
+                    <Button className="bg-gradient-to-r from-blue-600 to-red-600 text-white font-bold">See all events</Button>
+                  </Link>
+                </div>
               </div>
-              <div className="hidden md:flex items-center gap-3">
-                <Link href="/events" legacyBehavior>
-                  <Button className="bg-gradient-to-r from-blue-600 to-red-600 text-white font-bold">See all events</Button>
-                </Link>
-              </div>
-            </div>
-            
+            </ScrollReveal>
+
             <div className="grid md:grid-cols-3 gap-6">
-              {events.slice(0, 3).length > 0 ? events.slice(0, 3).map(event => (
-                <Card key={event.id} className={`overflow-hidden transition-all group shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-red-950/30 border-amber-900/50 hover:border-amber-600' : 'bg-white border-stone-300/50 hover:border-blue-500'}`}>
-                  {event.imageUrl && (
-                    <div className="aspect-video bg-stone-800 relative overflow-hidden">
-                      <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      <Badge className="absolute top-4 right-4 bg-red-600 text-white uppercase font-bold">
-                        {event.eventType}
-                      </Badge>
-                    </div>
-                  )}
-                  <CardHeader>
-                    <CardTitle className="text-xl text-white">{event.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
-                      <Calendar className="w-4 h-4" />
-                      {new Date(event.date).toLocaleDateString('en-IN')}
-                    </div>
-                    <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
-                      <MapPin className="w-4 h-4" />
-                      {event.location}
-                    </div>
-                    <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
-                      <Users className="w-4 h-4" />
-                      {event.rsvpCount || 0} attending
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
-                      className={`w-full font-bold text-white ${darkMode ? 'bg-gradient-to-r from-amber-600 to-red-700 hover:from-amber-700 hover:to-red-800' : 'bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700'}`}
-                    >
-                      RSVP Now
-                    </Button>
-                  </CardFooter>
-                </Card>
+              {events.slice(0, 3).length > 0 ? events.slice(0, 3).map((event, idx) => (
+                <ScrollReveal key={event.id} direction="up" delay={idx * 0.15} scale blur>
+                  <Card className={`overflow-hidden transition-all group shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-red-950/30 border-amber-900/50 hover:border-amber-600' : 'bg-white border-stone-300/50 hover:border-blue-500'}`}>
+                    {event.imageUrl && (
+                      <div className="aspect-video bg-stone-800 relative overflow-hidden">
+                        <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <Badge className="absolute top-4 right-4 bg-red-600 text-white uppercase font-bold">
+                          {event.eventType}
+                        </Badge>
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-xl text-white">{event.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
+                        <Calendar className="w-4 h-4" />
+                        {new Date(event.date).toLocaleDateString('en-IN')}
+                      </div>
+                      <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
+                        <MapPin className="w-4 h-4" />
+                        {event.location}
+                      </div>
+                      <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
+                        <Users className="w-4 h-4" />
+                        {event.rsvpCount || 0} attending
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
+                        className={`w-full font-bold text-white ${darkMode ? 'bg-gradient-to-r from-amber-600 to-red-700 hover:from-amber-700 hover:to-red-800' : 'bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700'}`}
+                      >
+                        RSVP Now
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </ScrollReveal>
               )) : (
                 <div className="col-span-3 text-center py-16">
                   <Calendar className="w-16 h-16 text-stone-600 mx-auto mb-4" />
@@ -698,40 +625,46 @@ export default function App() {
         {/* Featured News Section */}
         <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-amber-950/20 border-amber-900/30' : 'bg-gradient-to-br from-amber-50 to-stone-100 border-stone-300/50'}`}>
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 mb-12">
-              <Newspaper className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
-              <div>
-                <h2 className={`text-4xl font-black uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Latest Moto News</h2>
-                <p className={darkMode ? 'text-zinc-400' : 'text-stone-600'}>Stay updated with the riding world</p>
+            <ScrollReveal direction="left" scale>
+              <div className="flex items-center gap-3 mb-12">
+                <FloatingElement duration={3} yOffset={10}>
+                  <Newspaper className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
+                </FloatingElement>
+                <div>
+                  <h2 className={`text-4xl font-black uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Latest Moto News</h2>
+                  <p className={darkMode ? 'text-zinc-400' : 'text-stone-600'}>Stay updated with the riding world</p>
+                </div>
               </div>
-            </div>
-            
+            </ScrollReveal>
+
             <div className="grid md:grid-cols-3 gap-6">
-              {MOCK_NEWS.map(news => (
-                <Card key={news.id} className={`overflow-hidden transition-all group shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-amber-950/30 border-amber-900/50 hover:border-red-600' : 'bg-white border-stone-300/50 hover:border-red-500'}`}>
-                  <div className="aspect-video bg-stone-800 relative overflow-hidden">
-                    <img src={news.image} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    <Badge className="absolute top-4 right-4 bg-blue-600 text-white text-xs">
-                      {news.category}
-                    </Badge>
-                  </div>
-                  <CardHeader>
-                    <div className="flex items-center gap-2 text-xs text-stone-500 mb-2">
-                      <span>{news.source}</span>
-                      <span>•</span>
-                      <span>{new Date(news.date).toLocaleDateString()}</span>
+              {MOCK_NEWS.map((news, idx) => (
+                <ScrollReveal key={news.id} direction="up" delay={idx * 0.1} scale>
+                  <Card className={`overflow-hidden transition-all group shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-amber-950/30 border-amber-900/50 hover:border-red-600' : 'bg-white border-stone-300/50 hover:border-red-500'}`}>
+                    <div className="aspect-video bg-stone-800 relative overflow-hidden">
+                      <img src={news.image} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <Badge className="absolute top-4 right-4 bg-blue-600 text-white text-xs">
+                        {news.category}
+                      </Badge>
                     </div>
-                    <CardTitle className={`text-lg leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>{news.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>{news.excerpt}</p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="ghost" className={`p-0 ${darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-blue-400 hover:text-blue-300'}`}>
-                      Read More <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </CardFooter>
-                </Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-2 text-xs text-stone-500 mb-2">
+                        <span>{news.source}</span>
+                        <span>•</span>
+                        <span>{new Date(news.date).toLocaleDateString()}</span>
+                      </div>
+                      <CardTitle className={`text-lg leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>{news.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>{news.excerpt}</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" className={`p-0 ${darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-blue-400 hover:text-blue-300'}`}>
+                        Read More <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -740,39 +673,59 @@ export default function App() {
         {/* Features Section */}
         <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-red-950/20 border-amber-900/30' : 'bg-gradient-to-br from-stone-200 to-amber-100 border-stone-300/50'}`}>
           <div className="max-w-7xl mx-auto">
-            <h2 className={`text-5xl font-black text-center mb-4 uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>The Ultimate</h2>
-            <h3 className={`text-3xl font-light text-center mb-20 bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}>Riding Community</h3>
-            
+            <ScrollReveal direction="up" scale blur>
+              <h2 className={`text-5xl font-black text-center mb-4 uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Experience</h2>
+              <h3 className={`text-3xl font-light text-center mb-20 bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}>The Digital Revolution</h3>
+            </ScrollReveal>
+
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="group">
-                <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-amber-950/50 to-zinc-900 border-2 border-amber-800/50 hover:border-amber-600' : 'bg-gradient-to-br from-blue-100 to-white border-2 border-blue-300/50 hover:border-blue-500'}`}>
-                  <Sparkles className={`w-16 h-16 mb-6 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
-                  <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Story Creation & Viewing</h3>
-                  <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                    Post ride journals with epic photos and videos. View, like, and comment on stories from the community.
-                  </p>
+              <ScrollReveal direction="left" delay={0.1} scale>
+                <div className="group">
+                  <ParallaxMouse strength={10}>
+                    <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-amber-950/50 to-zinc-900 border-2 border-amber-800/50 hover:border-amber-600' : 'bg-gradient-to-br from-blue-100 to-white border-2 border-blue-300/50 hover:border-blue-500'}`}>
+                      <FloatingElement duration={3.5} yOffset={12}>
+                        <Sparkles className={`w-16 h-16 mb-6 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
+                      </FloatingElement>
+                      <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Chronicle Your Rides</h3>
+                      <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
+                        Create your digital garage. Document every mile, every turn, and every memory in high fidelity.
+                      </p>
+                    </div>
+                  </ParallaxMouse>
                 </div>
-              </div>
-              
-              <div className="group">
-                <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-red-950/50 to-zinc-900 border-2 border-red-800/50 hover:border-red-600' : 'bg-gradient-to-br from-red-100 to-white border-2 border-red-300/50 hover:border-red-500'}`}>
-                  <Calendar className={`w-16 h-16 mb-6 ${darkMode ? 'text-red-500' : 'text-red-600'}`} />
-                  <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Event Hub with RSVP</h3>
-                  <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                    Discover rides, track days, and festivals. RSVP instantly and connect with riders across India.
-                  </p>
+              </ScrollReveal>
+
+              <ScrollReveal direction="up" delay={0.2} scale>
+                <div className="group">
+                  <ParallaxMouse strength={10}>
+                    <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-red-950/50 to-zinc-900 border-2 border-red-800/50 hover:border-red-600' : 'bg-gradient-to-br from-red-100 to-white border-2 border-red-300/50 hover:border-red-500'}`}>
+                      <FloatingElement duration={4} yOffset={15}>
+                        <Calendar className={`w-16 h-16 mb-6 ${darkMode ? 'text-red-500' : 'text-red-600'}`} />
+                      </FloatingElement>
+                      <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Ride Together</h3>
+                      <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
+                        Find your next adventure. From breakfast runs to cross-country expeditions, never ride alone again.
+                      </p>
+                    </div>
+                  </ParallaxMouse>
                 </div>
-              </div>
-              
-              <div className="group">
-                <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-800/50 to-zinc-900 border-2 border-zinc-700/50 hover:border-amber-500' : 'bg-gradient-to-br from-stone-100 to-white border-2 border-stone-300/50 hover:border-stone-500'}`}>
-                  <Users className={`w-16 h-16 mb-6 ${darkMode ? 'text-amber-400' : 'text-stone-700'}`} />
-                  <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Build Your Tribe</h3>
-                  <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                    Connect with clubs, creators, premium riders. Find your riding family, your community.
-                  </p>
+              </ScrollReveal>
+
+              <ScrollReveal direction="right" delay={0.3} scale>
+                <div className="group">
+                  <ParallaxMouse strength={10}>
+                    <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-800/50 to-zinc-900 border-2 border-zinc-700/50 hover:border-amber-500' : 'bg-gradient-to-br from-stone-100 to-white border-2 border-stone-300/50 hover:border-stone-500'}`}>
+                      <FloatingElement duration={3} yOffset={10}>
+                        <Users className={`w-16 h-16 mb-6 ${darkMode ? 'text-amber-400' : 'text-stone-700'}`} />
+                      </FloatingElement>
+                      <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Find Your Pack</h3>
+                      <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
+                        Connect with riders who share your machine and your mindset. Build your tribe, locally and globally.
+                      </p>
+                    </div>
+                  </ParallaxMouse>
                 </div>
-              </div>
+              </ScrollReveal>
             </div>
           </div>
         </div>
@@ -780,22 +733,28 @@ export default function App() {
         {/* Brand Partnerships Section */}
         <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-amber-950/20 border-amber-900/30' : 'bg-gradient-to-br from-stone-100 to-amber-50 border-stone-300/50'}`}>
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 justify-center mb-12">
-              <Handshake className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
-              <h2 className={`text-4xl font-black uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Brand Partners</h2>
-            </div>
-            <p className={`text-center mb-12 text-lg ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>Collaborating with India's leading motorcycle brands</p>
-            
+            <ScrollReveal direction="up" scale>
+              <div className="flex items-center gap-3 justify-center mb-12">
+                <FloatingElement duration={3.5} yOffset={12}>
+                  <Handshake className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
+                </FloatingElement>
+                <h2 className={`text-4xl font-black uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Brand Partners</h2>
+              </div>
+              <p className={`text-center mb-12 text-lg ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>Collaborating with India's leading motorcycle brands</p>
+            </ScrollReveal>
+
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
               {BRAND_PARTNERS.map((brand, idx) => (
-                <div key={idx} className="group">
-                  <div className={`rounded-xl p-6 h-32 flex items-center justify-center transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-amber-950/30 border-2 border-amber-800/50 hover:border-amber-600' : 'bg-white border-2 border-stone-300/50 hover:border-blue-500'}`}>
-                    <div className={`w-24 h-24 rounded-lg overflow-hidden border ${darkMode ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'}`}>
-                      <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                <ScrollReveal key={idx} direction="up" delay={idx * 0.1} scale>
+                  <div className="group">
+                    <div className={`rounded-xl p-6 h-32 flex items-center justify-center transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-amber-950/30 border-2 border-amber-800/50 hover:border-amber-600' : 'bg-white border-2 border-stone-300/50 hover:border-blue-500'}`}>
+                      <div className={`w-24 h-24 rounded-lg overflow-hidden border ${darkMode ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'}`}>
+                        <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      </div>
                     </div>
+                    <p className={`text-center text-sm mt-3 font-medium ${darkMode ? 'text-zinc-400' : 'text-stone-700'}`}>{brand.name}</p>
                   </div>
-                  <p className={`text-center text-sm mt-3 font-medium ${darkMode ? 'text-zinc-400' : 'text-stone-700'}`}>{brand.name}</p>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -804,15 +763,19 @@ export default function App() {
         {/* CTA Section */}
         <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-red-950/30 via-zinc-950 to-amber-950/30 border-amber-900/30' : 'bg-gradient-to-br from-blue-100/50 via-stone-50 to-red-100/50 border-stone-300/50'}`}>
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className={`text-5xl font-black mb-6 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Ready to Ride?</h2>
-            <p className={`text-xl mb-10 ${darkMode ? 'text-zinc-400' : 'text-stone-700'}`}>Join India's fastest-growing premium motorcycle community</p>
-            <Button 
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white px-12 py-8 text-2xl font-black uppercase shadow-2xl shadow-blue-900/50 transition-all hover:scale-105"
-              onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
-            >
-              Join The Saga Now
-            </Button>
+            <ScrollReveal direction="up" scale blur>
+              <h2 className={`text-5xl font-black mb-6 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>The Road is Calling</h2>
+              <p className={`text-xl mb-10 ${darkMode ? 'text-zinc-400' : 'text-stone-700'}`}>Join thousands of riders documenting their journey on The Moto Saga</p>
+            </ScrollReveal>
+            <ScrollReveal direction="up" delay={0.2} scale>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white px-12 py-8 text-2xl font-black uppercase shadow-2xl shadow-blue-900/50 transition-all hover:scale-105"
+                onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
+              >
+                Join The Saga Now
+              </Button>
+            </ScrollReveal>
           </div>
         </div>
 
@@ -836,13 +799,13 @@ export default function App() {
                     <Input
                       id="name"
                       value={authForm.name}
-                      onChange={(e) => setAuthForm({...authForm, name: e.target.value})}
+                      onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })}
                       className="bg-stone-900 border-stone-800 text-white"
                     />
                   </div>
                   <div>
                     <Label htmlFor="role" className="text-white font-semibold">I am a...</Label>
-                    <Select value={authForm.role} onValueChange={(value) => setAuthForm({...authForm, role: value})}>
+                    <Select value={authForm.role} onValueChange={(value) => setAuthForm({ ...authForm, role: value })}>
                       <SelectTrigger className="bg-stone-900 border-stone-800 text-white">
                         <SelectValue />
                       </SelectTrigger>
@@ -860,48 +823,48 @@ export default function App() {
                         id="bikeInfo"
                         placeholder="e.g., Royal Enfield Himalayan 450"
                         value={authForm.bikeInfo}
-                        onChange={(e) => setAuthForm({...authForm, bikeInfo: e.target.value})}
+                        onChange={(e) => setAuthForm({ ...authForm, bikeInfo: e.target.value })}
                         className="bg-stone-900 border-stone-800 text-white"
                       />
                     </div>
                   )}
                 </>
               )}
-              
+
               <div>
                 <Label htmlFor="email" className="text-white font-semibold">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={authForm.email}
-                  onChange={(e) => setAuthForm({...authForm, email: e.target.value})}
+                  onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
                   className="bg-stone-900 border-stone-800 text-white"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="password" className="text-white font-semibold">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   value={authForm.password}
-                  onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
+                  onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
                   className="bg-stone-900 border-stone-800 text-white"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-4">
-              <Button 
-                onClick={handleAuth} 
+              <Button
+                onClick={handleAuth}
                 disabled={loading}
                 className="bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white font-bold uppercase"
               >
                 {loading ? 'Please wait...' : authMode === 'login' ? 'Sign In' : 'Join Now'}
               </Button>
-              
-              <Button 
-                variant="ghost" 
+
+              <Button
+                variant="ghost"
                 onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
                 className="text-blue-400 hover:text-blue-300"
               >
@@ -918,7 +881,7 @@ export default function App() {
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-zinc-950 via-red-950/30 to-zinc-950' : 'bg-gradient-to-br from-stone-200 via-amber-50 to-stone-100'}`}>
       <Toaster />
-      
+
       {/* Header */}
       <header className={`border-b backdrop-blur sticky top-0 z-50 ${darkMode ? 'border-amber-900/30 bg-zinc-950/95' : 'border-stone-300/50 bg-stone-100/95'}`}>
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -926,18 +889,17 @@ export default function App() {
             <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${darkMode ? 'bg-amber-900/20 border-amber-600' : 'bg-stone-100 border-blue-500'}`}>
               <img src={LOGO_URL} alt="The Moto Saga" className="w-full h-full object-cover" />
             </div>
-            
+
             {/* Navigation Buttons */}
             <div className="flex items-center gap-3">
               <Button
                 variant={activeTab === 'stories' ? 'default' : 'outline'}
                 size="default"
                 onClick={() => setActiveTab('stories')}
-                className={`font-bold uppercase px-6 ${
-                  activeTab === 'stories' 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/50' 
-                    : 'border-2 border-blue-600/50 text-blue-400 hover:bg-blue-600/10 hover:border-blue-600'
-                }`}
+                className={`font-bold uppercase px-6 ${activeTab === 'stories'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-900/50'
+                  : 'border-2 border-blue-600/50 text-blue-400 hover:bg-blue-600/10 hover:border-blue-600'
+                  }`}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
                 Stories
@@ -946,11 +908,10 @@ export default function App() {
                 variant={activeTab === 'events' ? 'default' : 'outline'}
                 size="default"
                 onClick={() => setActiveTab('events')}
-                className={`font-bold uppercase px-6 ${
-                  activeTab === 'events' 
-                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/50' 
-                    : 'border-2 border-red-600/50 text-red-400 hover:bg-red-600/10 hover:border-red-600'
-                }`}
+                className={`font-bold uppercase px-6 ${activeTab === 'events'
+                  ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-900/50'
+                  : 'border-2 border-red-600/50 text-red-400 hover:bg-red-600/10 hover:border-red-600'
+                  }`}
               >
                 <Calendar className="w-5 h-5 mr-2" />
                 Events
@@ -977,20 +938,13 @@ export default function App() {
               </Link>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={toggleDarkMode}
-              className={darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-stone-700 hover:text-stone-900'}
-            >
-              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </Button>
+
 
             {user.role === 'admin' && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 className={`font-semibold ${darkMode ? 'border-amber-600 text-amber-400 hover:bg-amber-600/10' : 'border-blue-600 text-blue-400 hover:bg-blue-600/10'}`}
                 onClick={() => setShowEventDialog(true)}
@@ -999,8 +953,8 @@ export default function App() {
                 Create Event
               </Button>
             )}
-            
-            <Button 
+
+            <Button
               size="sm"
               className={`font-semibold ${darkMode ? 'bg-gradient-to-r from-amber-600 to-red-700 hover:from-amber-700 hover:to-red-800' : 'bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700'} text-white`}
               onClick={() => setShowStoryDialog(true)}
@@ -1019,9 +973,9 @@ export default function App() {
                 <ShieldCheck className="w-4 h-4" />
               </Button>
             )}
-            
-            <Button 
-              variant="ghost" 
+
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setShowProfileDialog(true)}
               className={darkMode ? 'text-amber-100 hover:text-amber-400' : 'text-stone-800 hover:text-blue-600'}
@@ -1029,10 +983,10 @@ export default function App() {
               <User className="w-4 h-4 mr-2" />
               {user.name}
             </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
+
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleLogout}
               className={darkMode ? 'text-zinc-400 hover:text-red-500' : 'text-stone-500 hover:text-red-500'}
             >
@@ -1064,7 +1018,7 @@ export default function App() {
                   <Sparkles className="w-20 h-20 text-blue-500 mx-auto mb-4" />
                   <h3 className="text-2xl font-black text-white mb-2 uppercase">No stories yet</h3>
                   <p className="text-stone-400 mb-6">Be the first to share your ride!</p>
-                  <Button 
+                  <Button
                     onClick={() => setShowStoryDialog(true)}
                     className="bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 font-bold"
                   >
@@ -1115,10 +1069,10 @@ export default function App() {
                       </div>
                     )}
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-4">
                     <p className="text-stone-300 whitespace-pre-wrap leading-relaxed">{story.content}</p>
-                    
+
                     {story.mediaUrls && story.mediaUrls.length > 0 && (
                       <div className="grid grid-cols-2 gap-2">
                         {story.mediaUrls.map((url: string, idx: number) => (
@@ -1129,7 +1083,7 @@ export default function App() {
                       </div>
                     )}
                   </CardContent>
-                  
+
                   <CardFooter className="border-t border-stone-800/20 pt-4">
                     <div className="flex items-center gap-6 w-full">
                       <Button
@@ -1174,7 +1128,7 @@ export default function App() {
                         </Badge>
                       </div>
                     )}
-                    
+
                     <CardHeader>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -1199,13 +1153,13 @@ export default function App() {
                       </div>
                       <CardTitle className="text-xl text-white">{event.title}</CardTitle>
                     </CardHeader>
-                    
+
                     <CardContent className="space-y-3">
                       <p className="text-stone-300 text-sm leading-relaxed">{event.description}</p>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-blue-400">
                           <Calendar className="w-4 h-4" />
-                          {new Date(event.date).toLocaleDateString('en-IN', { 
+                          {new Date(event.date).toLocaleDateString('en-IN', {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric'
@@ -1221,12 +1175,12 @@ export default function App() {
                         </div>
                       </div>
                     </CardContent>
-                    
+
                     <CardFooter>
                       <Button
                         onClick={() => handleRSVP(event.id)}
-                        className={`w-full font-bold uppercase ${event.rsvps?.includes(user.id) 
-                          ? 'bg-stone-800 hover:bg-stone-700 text-white' 
+                        className={`w-full font-bold uppercase ${event.rsvps?.includes(user.id)
+                          ? 'bg-stone-800 hover:bg-stone-700 text-white'
                           : 'bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white shadow-lg shadow-red-900/50'}`}
                       >
                         {event.rsvps?.includes(user.id) ? 'Cancel RSVP' : 'RSVP Now'}
@@ -1258,33 +1212,33 @@ export default function App() {
                 id="story-title"
                 placeholder="Epic ride to Leh-Ladakh..."
                 value={storyForm.title}
-                onChange={(e) => setStoryForm({...storyForm, title: e.target.value})}
+                onChange={(e) => setStoryForm({ ...storyForm, title: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="story-location" className="text-white font-semibold">Location</Label>
               <Input
                 id="story-location"
                 placeholder="Leh, Ladakh"
                 value={storyForm.location}
-                onChange={(e) => setStoryForm({...storyForm, location: e.target.value})}
+                onChange={(e) => setStoryForm({ ...storyForm, location: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="story-content" className="text-white font-semibold">Your Story</Label>
               <Textarea
                 id="story-content"
                 placeholder="Tell us about your ride..."
                 value={storyForm.content}
-                onChange={(e) => setStoryForm({...storyForm, content: e.target.value})}
+                onChange={(e) => setStoryForm({ ...storyForm, content: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white min-h-32"
               />
             </div>
-            
+
             <div>
               <Label className="text-white font-semibold">Photos / Videos</Label>
               <div className="mt-2">
@@ -1308,15 +1262,15 @@ export default function App() {
           </div>
 
           <div className="flex gap-4">
-            <Button 
-              onClick={createStory} 
+            <Button
+              onClick={createStory}
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white font-bold uppercase"
             >
               {loading ? 'Posting...' : 'Post Story'}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowStoryDialog(false)}
               className="border-stone-800 text-stone-400 hover:bg-stone-900"
             >
@@ -1346,14 +1300,14 @@ export default function App() {
                 id="event-title"
                 placeholder="Sunday Morning Ride"
                 value={eventForm.title}
-                onChange={(e) => setEventForm({...eventForm, title: e.target.value})}
+                onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="event-type" className="text-white font-semibold">Event Type</Label>
-              <Select value={eventForm.eventType} onValueChange={(value) => setEventForm({...eventForm, eventType: value})}>
+              <Select value={eventForm.eventType} onValueChange={(value) => setEventForm({ ...eventForm, eventType: value })}>
                 <SelectTrigger className="bg-stone-900 border-stone-800 text-white">
                   <SelectValue />
                 </SelectTrigger>
@@ -1365,7 +1319,7 @@ export default function App() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="event-date" className="text-white font-semibold">Date</Label>
@@ -1373,7 +1327,7 @@ export default function App() {
                   id="event-date"
                   type="date"
                   value={eventForm.date}
-                  onChange={(e) => setEventForm({...eventForm, date: e.target.value})}
+                  onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
                   className="bg-stone-900 border-stone-800 text-white"
                 />
               </div>
@@ -1384,56 +1338,56 @@ export default function App() {
                   type="number"
                   placeholder="0 = unlimited"
                   value={eventForm.maxAttendees}
-                  onChange={(e) => setEventForm({...eventForm, maxAttendees: parseInt(e.target.value) || 0})}
+                  onChange={(e) => setEventForm({ ...eventForm, maxAttendees: parseInt(e.target.value) || 0 })}
                   className="bg-stone-900 border-stone-800 text-white"
                 />
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="event-location" className="text-white font-semibold">Location</Label>
               <Input
                 id="event-location"
                 placeholder="India Gate, Delhi"
                 value={eventForm.location}
-                onChange={(e) => setEventForm({...eventForm, location: e.target.value})}
+                onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="event-description" className="text-white font-semibold">Description</Label>
               <Textarea
                 id="event-description"
                 placeholder="Event details..."
                 value={eventForm.description}
-                onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
+                onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white min-h-24"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="event-image" className="text-white font-semibold">Image URL</Label>
               <Input
                 id="event-image"
                 placeholder="https://..."
                 value={eventForm.imageUrl}
-                onChange={(e) => setEventForm({...eventForm, imageUrl: e.target.value})}
+                onChange={(e) => setEventForm({ ...eventForm, imageUrl: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white"
               />
             </div>
           </div>
 
           <div className="flex gap-4">
-            <Button 
-              onClick={createEvent} 
+            <Button
+              onClick={createEvent}
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white font-bold uppercase"
             >
               {loading ? 'Creating...' : 'Create Event'}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowEventDialog(false)}
               className="border-stone-800 text-stone-400 hover:bg-stone-900"
             >
@@ -1460,34 +1414,34 @@ export default function App() {
               </Avatar>
               <Badge className="bg-gradient-to-r from-blue-600 to-red-600 uppercase font-bold">{user.role}</Badge>
             </div>
-            
+
             <div>
               <Label htmlFor="profile-name" className="text-white font-semibold">Name</Label>
               <Input
                 id="profile-name"
                 value={profileForm.name}
-                onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
+                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="profile-bio" className="text-white font-semibold">Bio</Label>
               <Textarea
                 id="profile-bio"
                 value={profileForm.bio}
-                onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})}
+                onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
                 className="bg-stone-900 border-stone-800 text-white"
               />
             </div>
-            
+
             {user.role === 'rider' && (
               <div>
                 <Label htmlFor="profile-bike" className="text-white font-semibold">Your Bike</Label>
                 <Input
                   id="profile-bike"
                   value={profileForm.bikeInfo}
-                  onChange={(e) => setProfileForm({...profileForm, bikeInfo: e.target.value})}
+                  onChange={(e) => setProfileForm({ ...profileForm, bikeInfo: e.target.value })}
                   className="bg-stone-900 border-stone-800 text-white"
                 />
               </div>
@@ -1495,15 +1449,15 @@ export default function App() {
           </div>
 
           <div className="flex gap-4">
-            <Button 
-              onClick={updateProfile} 
+            <Button
+              onClick={updateProfile}
               disabled={loading}
               className="flex-1 bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white font-bold uppercase"
             >
               {loading ? 'Saving...' : 'Save'}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowProfileDialog(false)}
               className="border-stone-800 text-stone-400 hover:bg-stone-900"
             >
@@ -1540,7 +1494,7 @@ export default function App() {
                     <div className="text-3xl font-black text-blue-400">{adminStats.totalUsers}</div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="bg-gradient-to-br from-red-950/50 to-transparent border-red-800/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm text-stone-400 uppercase flex items-center gap-2">
@@ -1552,7 +1506,7 @@ export default function App() {
                     <div className="text-3xl font-black text-red-400">{adminStats.totalStories}</div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="bg-gradient-to-br from-stone-800/50 to-transparent border-stone-700/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm text-stone-400 uppercase flex items-center gap-2">
@@ -1565,7 +1519,7 @@ export default function App() {
                   </CardContent>
                 </Card>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-bold text-white mb-3 uppercase flex items-center gap-2">
                   <Users className="w-5 h-5 text-blue-400" />

@@ -7,27 +7,21 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Toaster } from '@/components/ui/toaster';
 import { Sun, Moon, ChevronLeft, Mail, Phone, MapPin } from 'lucide-react';
+import { ScrollReveal } from '@/components/parallax/scroll-reveal';
+import { FloatingElement } from '@/components/parallax/floating-element';
+import { useTheme } from '@/components/providers/theme-provider';
 
 const LOGO_URL = 'https://customer-assets.emergentagent.com/job_motocommunity/artifacts/tt95bhwq_image.png';
 
 export default function ContactPage() {
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   const [form, setForm] = useState({ name: '', email: '', message: '' });
 
   useEffect(() => {
     setMounted(true);
-    try {
-      const saved = localStorage.getItem('darkMode');
-      setDarkMode(saved === 'true');
-    } catch (e) {}
   }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    try { localStorage.setItem('darkMode', darkMode.toString()); } catch (e) {}
-  }, [darkMode, mounted]);
 
   if (!mounted) return <div className="min-h-screen" />;
 
@@ -36,28 +30,7 @@ export default function ContactPage() {
       <Toaster />
 
       {/* HEADER */}
-      <header className={`sticky top-0 z-40 backdrop-blur border-b ${darkMode ? 'bg-zinc-950/95 border-amber-900/20' : 'bg-stone-100/95 border-stone-300/50'}`}>
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${darkMode ? 'bg-amber-900/20 border-amber-600' : 'bg-stone-100 border-blue-500'}`}>
-                <img src={LOGO_URL} alt="The Moto Saga" className="w-full h-full object-cover" />
-              </div>
-              <span className={`font-black tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>The Moto Saga</span>
-            </Link>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/" className={`inline-flex items-center gap-2 font-semibold ${darkMode ? 'text-amber-100' : 'text-stone-700'}`}>
-              <ChevronLeft className="w-4 h-4" /> Back
-            </Link>
-
-            <Button variant="ghost" size="sm" onClick={() => setDarkMode(!darkMode)} className={darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-stone-700 hover:text-stone-900'}>
-              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </Button>
-          </div>
-        </div>
-      </header>
 
       {/* MAIN */}
       <main className="container mx-auto px-4 py-16 max-w-3xl">
@@ -121,11 +94,7 @@ export default function ContactPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className={`py-8 border-t ${darkMode ? 'border-amber-900/20' : 'border-stone-200/40'}`}>
-        <div className="container mx-auto px-4 text-center">
-          <p className={darkMode ? 'text-zinc-400' : 'text-stone-600'}>© {new Date().getFullYear()} The Moto Saga — Ride together, rise together.</p>
-        </div>
-      </footer>
+
     </div>
   );
 }

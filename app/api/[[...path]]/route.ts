@@ -6,22 +6,22 @@ import { verifyToken, requireAuth } from '../../../backend/middleware/auth.js';
 import { signup, login, getMe, updateProfile, getUserProfile } from '../../../backend/controllers/authController.js';
 
 // Story Controllers
-import { 
-  createStory, 
-  getStories, 
-  getStoryById, 
-  likeStory, 
-  commentOnStory, 
-  deleteStory 
+import {
+  createStory,
+  getStories,
+  getStoryById,
+  likeStory,
+  commentOnStory,
+  deleteStory
 } from '../../../backend/controllers/storyController.js';
 
 // Event Controllers
-import { 
-  createEvent, 
-  getEvents, 
-  getEventById, 
-  toggleRSVP, 
-  deleteEvent 
+import {
+  createEvent,
+  getEvents,
+  getEventById,
+  toggleRSVP,
+  deleteEvent
 } from '../../../backend/controllers/eventController.js';
 
 // Payment Controllers
@@ -36,14 +36,15 @@ import {
 } from '../../../backend/controllers/paymentController.js';
 
 // Admin Controllers
-import { 
-  getAdminStats, 
-  getAdminContent, 
-  getAllPayments, 
+import {
+  getAdminStats,
+  getAdminContent,
+  getAllPayments,
   getAllUsers,
   getRecentActivity,
   deleteEventByAdmin,
-  deleteStoryByAdmin
+  deleteStoryByAdmin,
+  getActiveUsers
 } from '../../../backend/controllers/adminController.js';
 
 // GET Handler
@@ -122,11 +123,16 @@ export async function GET(request: NextRequest, { params }: { params: { path?: s
       return await getRecentActivity(user);
     }
 
+    if (pathString === 'admin/active-users') {
+      const user = requireAuth(request);
+      return await getActiveUsers(user);
+    }
+
     return Response.json({ error: 'Not found' }, { status: 404 });
   } catch (error: any) {
     console.error('API Error:', error);
-    const statusCode = error.message === 'Authentication required' ? 401 : 
-                       error.message === 'Admin access required' ? 403 : 500;
+    const statusCode = error.message === 'Authentication required' ? 401 :
+      error.message === 'Admin access required' ? 403 : 500;
     return Response.json({ error: error.message }, { status: statusCode });
   }
 }
@@ -205,13 +211,13 @@ export async function POST(request: NextRequest, { params }: { params: { path?: 
     // Upload Route
     if (pathString === 'upload') {
       const user = requireAuth(request);
-      
+
       const formData = await request.formData();
       const file = formData.get('file');
       if (!(file instanceof File)) {
         return Response.json({ error: "Invalid file" }, { status: 400 });
       }
-      
+
       if (!file) {
         return Response.json({ error: 'No file provided' }, { status: 400 });
       }
@@ -226,8 +232,8 @@ export async function POST(request: NextRequest, { params }: { params: { path?: 
     return Response.json({ error: 'Not found' }, { status: 404 });
   } catch (error: any) {
     console.error('API Error:', error);
-    const statusCode = error.message === 'Authentication required' ? 401 : 
-                       error.message === 'Admin access required' ? 403 : 500;
+    const statusCode = error.message === 'Authentication required' ? 401 :
+      error.message === 'Admin access required' ? 403 : 500;
     return Response.json({ error: error.message }, { status: statusCode });
   }
 }
@@ -249,8 +255,8 @@ export async function PUT(request: NextRequest, { params }: { params: { path?: s
     return Response.json({ error: 'Not found' }, { status: 404 });
   } catch (error: any) {
     console.error('API Error:', error);
-    const statusCode = error.message === 'Authentication required' ? 401 : 
-                       error.message === 'Admin access required' ? 403 : 500;
+    const statusCode = error.message === 'Authentication required' ? 401 :
+      error.message === 'Admin access required' ? 403 : 500;
     return Response.json({ error: error.message }, { status: statusCode });
   }
 }
@@ -289,8 +295,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { path?
     return Response.json({ error: 'Not found' }, { status: 404 });
   } catch (error: any) {
     console.error('API Error:', error);
-    const statusCode = error.message === 'Authentication required' ? 401 : 
-                       error.message === 'Admin access required' ? 403 : 500;
+    const statusCode = error.message === 'Authentication required' ? 401 :
+      error.message === 'Admin access required' ? 403 : 500;
     return Response.json({ error: error.message }, { status: statusCode });
   }
 }

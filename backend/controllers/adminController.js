@@ -7,43 +7,84 @@ export async function getAdminStats(authUser) {
   if (authUser.role !== 'admin') {
     return Response.json({ error: 'Admin access required' }, { status: 403 });
   }
-  
+
   const db = await getDatabase();
   const paymentModel = new PaymentModel(db);
-  
+
   // Get basic stats
   const totalUsers = await db.collection('users').countDocuments();
   const totalStories = await db.collection('stories').countDocuments();
   const totalEvents = await db.collection('events').countDocuments();
-  
+
   // Get users by role
   const usersByRole = await db.collection('users').aggregate([
     { $group: { _id: '$role', count: { $sum: 1 } } }
   ]).toArray();
-  
+
   // Get payment stats
   const paymentStats = await paymentModel.getStats();
-  
+
   // Get recent activity counts (last 7 days)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  
+
   const recentUsers = await db.collection('users').countDocuments({
     createdAt: { $gte: sevenDaysAgo.toISOString() }
   });
-  
+
   const recentStories = await db.collection('stories').countDocuments({
     createdAt: { $gte: sevenDaysAgo.toISOString() }
   });
-  
+
   const recentEvents = await db.collection('events').countDocuments({
     createdAt: { $gte: sevenDaysAgo.toISOString() }
   });
-  
+
+  // Calculate active users (last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const activeUserIds = new Set();
+
+  // Users who created stories in last 30 days
+  const activeStoryCreators = await db.collection('stories')
+    .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ userId: 1 })
+    .toArray();
+  activeStoryCreators.forEach(s => activeUserIds.add(s.userId));
+
+  // Users who created events in last 30 days
+  const activeEventCreators = await db.collection('events')
+    .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ creatorId: 1 })
+    .toArray();
+  activeEventCreators.forEach(e => activeUserIds.add(e.creatorId));
+
+  // Users who made payments in last 30 days
+  const activePaymentUsers = await db.collection('payments')
+    .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ userId: 1 })
+    .toArray();
+  activePaymentUsers.forEach(p => activeUserIds.add(p.userId));
+
+  // Users who RSVPd to events in last 30 days
+  const recentEventsWithRsvps = await db.collection('events')
+    .find({ updatedAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ rsvps: 1 })
+    .toArray();
+  recentEventsWithRsvps.forEach(e => {
+    if (e.rsvps) {
+      e.rsvps.forEach(userId => activeUserIds.add(userId));
+    }
+  });
+
+  const activeUsersCount = activeUserIds.size;
+
   return Response.json({
     totalUsers,
     totalStories,
     totalEvents,
+    activeUsersCount,
     usersByRole,
     recentUsers,
     recentStories,
@@ -56,21 +97,21 @@ export async function getAdminContent(authUser) {
   if (authUser.role !== 'admin') {
     return Response.json({ error: 'Admin access required' }, { status: 403 });
   }
-  
+
   const db = await getDatabase();
-  
+
   const stories = await db.collection('stories')
     .find({})
     .sort({ createdAt: -1 })
     .limit(100)
     .toArray();
-  
+
   const events = await db.collection('events')
     .find({})
     .sort({ createdAt: -1 })
     .limit(100)
     .toArray();
-  
+
   return Response.json({ stories, events });
 }
 
@@ -78,25 +119,25 @@ export async function getAllUsers(authUser) {
   if (authUser.role !== 'admin') {
     return Response.json({ error: 'Admin access required' }, { status: 403 });
   }
-  
+
   const db = await getDatabase();
-  
+
   // Get all users with their activity counts
   const users = await db.collection('users')
     .find({})
     .sort({ createdAt: -1 })
     .toArray();
-  
+
   // Add story and event counts for each user
   for (let user of users) {
     const storyCount = await db.collection('stories').countDocuments({ userId: user.id });
     const eventCount = await db.collection('events').countDocuments({ creatorId: user.id });
-    
+
     user.storyCount = storyCount;
     user.eventCount = eventCount;
     delete user.password; // Remove password from response
   }
-  
+
   return Response.json(users);
 }
 
@@ -104,19 +145,19 @@ export async function getAllPayments(authUser) {
   if (authUser.role !== 'admin') {
     return Response.json({ error: 'Admin access required' }, { status: 403 });
   }
-  
+
   const db = await getDatabase();
   const payments = await db.collection('payments')
     .find({})
     .sort({ createdAt: -1 })
     .limit(200)
     .toArray();
-  
+
   // Populate user and event details
   for (let payment of payments) {
     const user = await db.collection('users').findOne({ id: payment.userId });
     const event = await db.collection('events').findOne({ id: payment.eventId });
-    
+
     if (user) {
       payment.user = {
         id: user.id,
@@ -124,7 +165,7 @@ export async function getAllPayments(authUser) {
         email: user.email
       };
     }
-    
+
     if (event) {
       payment.event = {
         id: event.id,
@@ -133,7 +174,7 @@ export async function getAllPayments(authUser) {
       };
     }
   }
-  
+
   return Response.json(payments);
 }
 
@@ -141,43 +182,43 @@ export async function getRecentActivity(authUser) {
   if (authUser.role !== 'admin') {
     return Response.json({ error: 'Admin access required' }, { status: 403 });
   }
-  
+
   const db = await getDatabase();
   const userModel = new UserModel(db);
-  
+
   // Get recent activities from last 30 days
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
+
   const recentUsers = await db.collection('users')
     .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
     .sort({ createdAt: -1 })
     .limit(20)
     .toArray();
-  
+
   const recentStories = await db.collection('stories')
     .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
     .sort({ createdAt: -1 })
     .limit(20)
     .toArray();
-  
+
   const recentEvents = await db.collection('events')
     .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
     .sort({ createdAt: -1 })
     .limit(20)
     .toArray();
-  
+
   const recentPayments = await db.collection('payments')
     .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
     .sort({ createdAt: -1 })
     .limit(20)
     .toArray();
-  
+
   // Sanitize user data
   for (let user of recentUsers) {
     delete user.password;
   }
-  
+
   // Populate user info for stories
   for (let story of recentStories) {
     const user = await userModel.findById(story.userId);
@@ -189,7 +230,7 @@ export async function getRecentActivity(authUser) {
       };
     }
   }
-  
+
   // Populate user info for events
   for (let event of recentEvents) {
     const user = await userModel.findById(event.creatorId);
@@ -201,10 +242,10 @@ export async function getRecentActivity(authUser) {
       };
     }
   }
-  
+
   // Create unified activity feed
   const activities = [];
-  
+
   recentUsers.forEach(user => {
     activities.push({
       type: 'user_signup',
@@ -212,7 +253,7 @@ export async function getRecentActivity(authUser) {
       data: user
     });
   });
-  
+
   recentStories.forEach(story => {
     activities.push({
       type: 'story_created',
@@ -220,7 +261,7 @@ export async function getRecentActivity(authUser) {
       data: story
     });
   });
-  
+
   recentEvents.forEach(event => {
     activities.push({
       type: 'event_created',
@@ -228,7 +269,7 @@ export async function getRecentActivity(authUser) {
       data: event
     });
   });
-  
+
   recentPayments.forEach(payment => {
     activities.push({
       type: 'payment_completed',
@@ -236,10 +277,10 @@ export async function getRecentActivity(authUser) {
       data: payment
     });
   });
-  
+
   // Sort by timestamp descending
   activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  
+
   return Response.json({
     activities: activities.slice(0, 50),
     recentUsers,
@@ -253,20 +294,20 @@ export async function deleteEventByAdmin(authUser, eventId) {
   if (authUser.role !== 'admin') {
     return Response.json({ error: 'Admin access required' }, { status: 403 });
   }
-  
+
   const db = await getDatabase();
   const eventModel = new EventModel(db);
-  
+
   const event = await eventModel.findById(eventId);
   if (!event) {
     return Response.json({ error: 'Event not found' }, { status: 404 });
   }
-  
+
   await eventModel.delete(eventId);
-  
-  return Response.json({ 
+
+  return Response.json({
     message: 'Event deleted successfully',
-    deletedEvent: event 
+    deletedEvent: event
   });
 }
 
@@ -274,18 +315,101 @@ export async function deleteStoryByAdmin(authUser, storyId) {
   if (authUser.role !== 'admin') {
     return Response.json({ error: 'Admin access required' }, { status: 403 });
   }
-  
+
   const db = await getDatabase();
-  
+
   const story = await db.collection('stories').findOne({ id: storyId });
   if (!story) {
     return Response.json({ error: 'Story not found' }, { status: 404 });
   }
-  
+
   await db.collection('stories').deleteOne({ id: storyId });
-  
-  return Response.json({ 
+
+  return Response.json({
     message: 'Story deleted successfully',
-    deletedStory: story 
+    deletedStory: story
   });
 }
+
+export async function getActiveUsers(authUser) {
+  if (authUser.role !== 'admin') {
+    return Response.json({ error: 'Admin access required' }, { status: 403 });
+  }
+
+  const db = await getDatabase();
+
+  // Calculate active users (last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const activeUserIds = new Set();
+
+  // Users who created stories in last 30 days
+  const activeStoryCreators = await db.collection('stories')
+    .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ userId: 1 })
+    .toArray();
+  activeStoryCreators.forEach(s => activeUserIds.add(s.userId));
+
+  // Users who created events in last 30 days
+  const activeEventCreators = await db.collection('events')
+    .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ creatorId: 1 })
+    .toArray();
+  activeEventCreators.forEach(e => activeUserIds.add(e.creatorId));
+
+  // Users who made payments in last 30 days
+  const activePaymentUsers = await db.collection('payments')
+    .find({ createdAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ userId: 1 })
+    .toArray();
+  activePaymentUsers.forEach(p => activeUserIds.add(p.userId));
+
+  // Users who RSVPd to events in last 30 days
+  const recentEventsWithRsvps = await db.collection('events')
+    .find({ updatedAt: { $gte: thirtyDaysAgo.toISOString() } })
+    .project({ rsvps: 1 })
+    .toArray();
+  recentEventsWithRsvps.forEach(e => {
+    if (e.rsvps) {
+      e.rsvps.forEach(userId => activeUserIds.add(userId));
+    }
+  });
+
+  // Get full user details for active users
+  const activeUsers = [];
+  for (const userId of activeUserIds) {
+    const user = await db.collection('users').findOne({ id: userId });
+    if (user) {
+      // Get activity counts
+      const storyCount = await db.collection('stories').countDocuments({
+        userId: user.id,
+        createdAt: { $gte: thirtyDaysAgo.toISOString() }
+      });
+      const eventCount = await db.collection('events').countDocuments({
+        creatorId: user.id,
+        createdAt: { $gte: thirtyDaysAgo.toISOString() }
+      });
+      const paymentCount = await db.collection('payments').countDocuments({
+        userId: user.id,
+        createdAt: { $gte: thirtyDaysAgo.toISOString() }
+      });
+
+      delete user.password;
+      activeUsers.push({
+        ...user,
+        recentActivity: {
+          stories: storyCount,
+          events: eventCount,
+          payments: paymentCount
+        }
+      });
+    }
+  }
+
+  return Response.json({
+    count: activeUsers.length,
+    users: activeUsers
+  });
+}
+
