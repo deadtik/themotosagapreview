@@ -90,7 +90,7 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Profile card */}
           <Card className={`${darkMode ? 'bg-zinc-900/60' : 'bg-white'} p-6`}>
-            <CardContent className="flex items-center gap-6">
+            <CardContent className="flex flex-col md:flex-row items-center gap-6">
               <Avatar className="w-20 h-20 border-2">
                 <AvatarImage src={user?.profileImage} />
                 <AvatarFallback className="bg-blue-600 text-white text-2xl font-bold">
@@ -99,17 +99,17 @@ export default function ProfilePage() {
               </Avatar>
 
               <div className="flex-1">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row items-center justify-between text-center md:text-left">
                   <div>
                     <h2 className={`text-2xl font-black ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>{user?.name || 'Guest'}</h2>
                     <p className={`text-sm ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>{user?.email || ''}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="mt-2 md:mt-0 md:text-right">
                     <Badge className="uppercase">{user?.role || 'guest'}</Badge>
                   </div>
                 </div>
 
-                <p className={`mt-3 ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
+                <p className={`mt-3 text-center md:text-left ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
                   {user?.bio || 'No bio yet. Tell the community about your rides and bikes!'}
                 </p>
               </div>

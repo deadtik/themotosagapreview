@@ -34,7 +34,7 @@ export default function ContactPage() {
 
       {/* MAIN */}
       <main className="container mx-auto px-4 py-16 max-w-3xl">
-        <h1 className={`text-5xl font-black text-center mb-6 ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Contact Us</h1>
+        <h1 className={`text-3xl md:text-5xl font-black text-center mb-6 ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Contact Us</h1>
         <p className={`text-center mb-12 text-lg ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
           We’d love to hear from you. Whether you're a rider, a brand, or a creator — let’s connect.
         </p>

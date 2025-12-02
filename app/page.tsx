@@ -526,17 +526,17 @@ export default function App() {
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.2} scale>
-              <h1 className={`text-6xl md:text-8xl font-black mb-6 tracking-tight leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
+              <h1 className={`text-4xl md:text-8xl font-black mb-6 tracking-tight leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
                 THE PULSE OF <span className={`bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}> MOTORCYCLING</span>
               </h1>
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.4}>
               <div className="max-w-3xl mx-auto space-y-4 mb-12">
-                <p className={`text-2xl md:text-3xl font-light ${darkMode ? 'text-amber-100' : 'text-stone-700'}`}>
+                <p className={`text-lg md:text-3xl font-light ${darkMode ? 'text-amber-100' : 'text-stone-700'}`}>
                   Your journey. Your stories. Your tribe.
                 </p>
-                <p className={`text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
+                <p className={`text-base md:text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
                   The ultimate digital home for every rider. Connect, share, and ride as one.
                 </p>
               </div>
@@ -546,7 +546,7 @@ export default function App() {
               <div className="flex gap-4 justify-center flex-wrap">
                 <Button
                   size="lg"
-                  className={`font-bold px-10 py-7 text-xl font-black uppercase shadow-xl transition-all hover:scale-105 ${darkMode ? 'bg-gradient-to-r from-amber-600 to-blue-700 hover:from-amber-700 hover:to-blue-800 shadow-amber-900/50' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-900/50'} text-white`}
+                  className={`font-bold px-6 py-6 md:px-10 md:py-7 text-lg md:text-xl font-black uppercase shadow-xl transition-all hover:scale-105 ${darkMode ? 'bg-gradient-to-r from-amber-600 to-blue-700 hover:from-amber-700 hover:to-blue-800 shadow-amber-900/50' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-900/50'} text-white`}
                   onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
                 >
                   Start Your Saga <ChevronRight className="ml-2" />

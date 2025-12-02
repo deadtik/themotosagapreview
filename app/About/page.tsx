@@ -40,7 +40,7 @@ export default function AboutTheMotoSaga() {
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.2}>
-            <h1 className={`text-5xl md:text-6xl font-black mb-4 ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
+            <h1 className={`text-3xl md:text-6xl font-black mb-4 ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
               The Pulse of <span className={`bg-clip-text text-transparent bg-gradient-to-r ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}>Indian Motorcycling</span>
             </h1>
           </ScrollReveal>

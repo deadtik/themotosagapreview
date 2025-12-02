@@ -208,7 +208,7 @@ export default function EventsPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
             <div className="flex items-center gap-2 bg-white dark:bg-stone-900 px-2 py-2 rounded shadow-sm">
               <Input
                 placeholder="Search events, location, description..."
@@ -219,7 +219,7 @@ export default function EventsPage() {
               <Button variant="ghost" onClick={() => { setQuery(''); }} className="hidden sm:inline-flex">Clear</Button>
             </div>
 
-            <div className="w-48">
+            <div className="w-full md:w-48">
               <Select value={filterType} onValueChange={(v: any) => setFilterType(v)}>
                 <SelectTrigger className="w-full bg-white dark:bg-stone-900">
                   <SelectValue />
