@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/components/providers/theme-provider';
+import { useAuth } from '@/components/providers/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,10 +39,10 @@ export default function EventsPage() {
   const [query, setQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'ride' | 'trackday' | 'meetup' | 'festival'>('all');
   const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const { toast } = useToast();
+  const { darkMode } = useTheme();
+  const { user, token } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({
     title: '',
@@ -51,20 +53,11 @@ export default function EventsPage() {
     maxAttendees: 0,
     imageUrl: ''
   });
-  const { toast } = useToast();
+
 
   // Load dark mode + token/user from localStorage to keep experience consistent
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(saved);
-    const t = localStorage.getItem('token');
-    if (t) setToken(t);
-    // minimal attempt to get user (optional)
-    try {
-      const u = localStorage.getItem('user');
-      if (u) setUser(JSON.parse(u));
-    } catch (e) {}
   }, []);
 
   // Fetch events
@@ -76,11 +69,7 @@ export default function EventsPage() {
     applyFilters();
   }, [events, query, filterType]);
 
-  const toggleDarkMode = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    localStorage.setItem('darkMode', next.toString());
-  };
+
 
   const fetchAllEvents = async () => {
     setLoading(true);
@@ -202,39 +191,7 @@ export default function EventsPage() {
       <Toaster />
 
       {/* top navigation (kept small, consistent with theme) */}
-      <nav className={`sticky top-0 z-40 backdrop-blur border-b ${darkMode ? 'bg-zinc-950/95 border-amber-900/30' : 'bg-stone-100/95 border-stone-300/50'}`}>
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${darkMode ? 'bg-amber-900/20 border-amber-600' : 'bg-stone-100 border-blue-500'}`}>
-              <img src={LOGO_URL} alt="The Moto Saga" className="w-full h-full object-cover" />
-            </div>
-            <div className="text-lg font-black tracking-tight">
-              Events
-            </div>
-            <Link href="/" className={`ml-4 text-sm font-semibold ${darkMode ? 'text-amber-200' : 'text-stone-700'}`}>
-              Home
-            </Link>
-            <Link href="/About" className={`ml-2 text-sm font-semibold ${darkMode ? 'text-amber-200' : 'text-stone-700'}`}>
-              About
-            </Link>
-            <Link href="/Contact" className={`ml-2 text-sm font-semibold ${darkMode ? 'text-amber-200' : 'text-stone-700'}`}>
-              Contact
-            </Link>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={toggleDarkMode} className={darkMode ? 'text-amber-400' : 'text-stone-700'}>
-              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </Button>
-
-            {user?.role === 'admin' && (
-              <Button onClick={() => setShowCreate(true)} className="hidden sm:inline-flex bg-gradient-to-r from-blue-600 to-red-600 text-white font-bold">
-                <Plus className="w-4 h-4 mr-2" /> Create Event
-              </Button>
-            )}
-          </div>
-        </div>
-      </nav>
 
       {/* page header + filters */}
       <header className="container mx-auto px-4 py-10">
@@ -244,6 +201,11 @@ export default function EventsPage() {
             <p className="mt-2 text-stone-500 max-w-xl">
               Find rides, track days, meetups and festivals — RSVP instantly and join the community.
             </p>
+            {user?.role === 'admin' && (
+              <Button onClick={() => setShowCreate(true)} className="mt-4 bg-gradient-to-r from-blue-600 to-red-600 text-white font-bold">
+                <Plus className="w-4 h-4 mr-2" /> Create Event
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -367,11 +329,11 @@ export default function EventsPage() {
           <div className="space-y-4 py-4">
             <div>
               <Label>Name</Label>
-              <Input value={createForm.title} onChange={(e) => setCreateForm({...createForm, title: e.target.value})} className="bg-stone-900" />
+              <Input value={createForm.title} onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })} className="bg-stone-900" />
             </div>
             <div>
               <Label>Type</Label>
-              <Select value={createForm.eventType} onValueChange={(v: any) => setCreateForm({...createForm, eventType: v})}>
+              <Select value={createForm.eventType} onValueChange={(v: any) => setCreateForm({ ...createForm, eventType: v })}>
                 <SelectTrigger className="bg-stone-900"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-stone-900">
                   <SelectItem value="ride">Group Ride</SelectItem>
@@ -384,24 +346,24 @@ export default function EventsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Date</Label>
-                <Input type="date" value={createForm.date} onChange={(e) => setCreateForm({...createForm, date: e.target.value})} className="bg-stone-900" />
+                <Input type="date" value={createForm.date} onChange={(e) => setCreateForm({ ...createForm, date: e.target.value })} className="bg-stone-900" />
               </div>
               <div>
                 <Label>Max Attendees</Label>
-                <Input type="number" value={createForm.maxAttendees} onChange={(e) => setCreateForm({...createForm, maxAttendees: parseInt(e.target.value || '0')})} className="bg-stone-900" />
+                <Input type="number" value={createForm.maxAttendees} onChange={(e) => setCreateForm({ ...createForm, maxAttendees: parseInt(e.target.value || '0') })} className="bg-stone-900" />
               </div>
             </div>
             <div>
               <Label>Location</Label>
-              <Input value={createForm.location} onChange={(e) => setCreateForm({...createForm, location: e.target.value})} className="bg-stone-900" />
+              <Input value={createForm.location} onChange={(e) => setCreateForm({ ...createForm, location: e.target.value })} className="bg-stone-900" />
             </div>
             <div>
               <Label>Description</Label>
-              <Textarea value={createForm.description} onChange={(e) => setCreateForm({...createForm, description: e.target.value})} className="bg-stone-900" />
+              <Textarea value={createForm.description} onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })} className="bg-stone-900" />
             </div>
             <div>
               <Label>Image URL</Label>
-              <Input value={createForm.imageUrl} onChange={(e) => setCreateForm({...createForm, imageUrl: e.target.value})} className="bg-stone-900" />
+              <Input value={createForm.imageUrl} onChange={(e) => setCreateForm({ ...createForm, imageUrl: e.target.value })} className="bg-stone-900" />
             </div>
           </div>
 

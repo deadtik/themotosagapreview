@@ -9,45 +9,23 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users, Trash2 } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/components/providers/theme-provider';
+import { useAuth } from '@/components/providers/auth-provider';
 
 export default function ProfilePage() {
   const [mounted, setMounted] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-
-  const [user, setUser] = useState<any | null>(null);
+  const { darkMode } = useTheme();
+  const { user, token } = useAuth();
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     setMounted(true);
-    setDarkMode(localStorage.getItem('darkMode') === 'true');
-    fetchCurrentUser();
     fetchEvents();
   }, []);
 
-  const toggleDarkMode = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    localStorage.setItem('darkMode', next.toString());
-  };
 
-  const fetchCurrentUser = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/auth/me', {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      console.error('fetchCurrentUser', err);
-    }
-  };
 
   const fetchEvents = async () => {
     try {
@@ -77,7 +55,6 @@ export default function ProfilePage() {
         const data = await res.json();
         // refresh events and user
         await fetchEvents();
-        await fetchCurrentUser();
         toast({
           title: 'RSVP cancelled',
           description: 'You\'ve been removed from the attendee list'
@@ -107,30 +84,7 @@ export default function ProfilePage() {
     <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-zinc-950 via-red-950/30 to-zinc-950' : 'bg-gradient-to-br from-stone-200 via-amber-50 to-stone-100'}`}>
       <Toaster />
       {/* simple header */}
-      <header className={`border-b sticky top-0 z-40 backdrop-blur ${darkMode ? 'bg-zinc-950/95 border-amber-900/30' : 'bg-white/95 border-stone-200/60'}`}>
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" legacyBehavior>
-              <a className="text-xl font-black uppercase tracking-tight">The Moto Saga</a>
-            </Link>
-            <nav className="hidden md:flex gap-2">
-              <Link href="/" legacyBehavior><a className="text-sm font-medium">Home</a></Link>
-              <Link href="/events" legacyBehavior><a className="text-sm font-medium">Events</a></Link>
-              <Link href="/about" legacyBehavior><a className="text-sm font-medium">About</a></Link>
-              <Link href="/contact" legacyBehavior><a className="text-sm font-medium">Contact</a></Link>
-            </nav>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={toggleDarkMode}>
-              {darkMode ? 'Light' : 'Dark'}
-            </Button>
-            <Link href="/profile" legacyBehavior>
-              <a className="hidden md:inline-block text-sm text-stone-600">Profile</a>
-            </Link>
-          </div>
-        </div>
-      </header>
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-8">
@@ -232,9 +186,7 @@ export default function ProfilePage() {
           </section>
 
           {/* small footer inside profile page */}
-          <footer className="text-center py-8">
-            <p className={`${darkMode ? 'text-zinc-400' : 'text-stone-500'}`}>© {new Date().getFullYear()} The Moto Saga — Ride together.</p>
-          </footer>
+
         </div>
       </main>
     </div>
