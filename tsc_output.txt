@@ -1,0 +1,12 @@
+.next/dev/types/validator.ts(53,39): error TS1149: File name 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/app/About/page.tsx' differs from already included file name 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/app/about/page.tsx' only in casing.
+  The file is in the program because:
+    Matched by include pattern '**/*.tsx' in 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/tsconfig.json'
+    Imported via "../../app/about/page.js" from file 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/.next/types/validator.ts'
+    Imported via "../../../app/About/page.js" from file 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/.next/dev/types/validator.ts'
+.next/dev/types/validator.ts(62,39): error TS1149: File name 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/app/Contact/page.tsx' differs from already included file name 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/app/contact/page.tsx' only in casing.
+  The file is in the program because:
+    Matched by include pattern '**/*.tsx' in 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/tsconfig.json'
+    Imported via "../../app/contact/page.js" from file 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/.next/types/validator.ts'
+    Imported via "../../../app/Contact/page.js" from file 'C:/Users/kumar/OneDrive/Desktop/themotosagapreview/.next/dev/types/validator.ts'
+app/page.tsx(728,28): error TS2304: Cannot find name 'Trash2'.
+app/page.tsx(818,30): error TS2304: Cannot find name 'Trash2'.

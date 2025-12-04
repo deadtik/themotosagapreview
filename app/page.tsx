@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,56 +14,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import { Heart, MessageCircle, Calendar, MapPin, Users, Plus, LogOut, User, Bike, Sparkles, ChevronRight, Settings, Trash2, ShieldCheck, DollarSign, UserCog, Newspaper, Handshake, Moon, Sun } from 'lucide-react';
-import { ParallaxSection } from '@/components/parallax/parallax-section';
-import { ScrollReveal } from '@/components/parallax/scroll-reveal';
-import { FloatingElement } from '@/components/parallax/floating-element';
-import { ParallaxMouse } from '@/components/parallax/parallax-mouse';
-import { VideoBackground } from '@/components/ui/video-background';
+import { Heart, MessageCircle, Calendar, MapPin, Users, Plus, LogOut, User, Sparkles, ShieldCheck, DollarSign, UserCog, Trash2 } from 'lucide-react';
 import { useTheme } from '@/components/providers/theme-provider';
 import { useAuth } from '@/components/providers/auth-provider';
+import { LOGO_URL } from '@/lib/mock-data';
 
-const LOGO_URL = 'https://customer-assets.emergentagent.com/job_motocommunity/artifacts/tt95bhwq_image.png';
-
-// Mock news data
-const MOCK_NEWS = [
-  {
-    id: 1,
-    title: 'Royal Enfield Unveils New Himalayan 450 Adventure Bike',
-    excerpt: 'The iconic Indian manufacturer launches its most advanced adventure motorcycle yet with cutting-edge technology.',
-    image: 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=800&q=80',
-    source: 'MotorcycleDaily',
-    date: '2025-01-08',
-    category: 'New Launches'
-  },
-  {
-    id: 2,
-    title: 'Kawasaki Ninja ZX-4RR Breaks Track Records in India',
-    excerpt: 'The supersport middleweight dominates track days across Indian circuits with impressive lap times.',
-    image: 'https://images.unsplash.com/photo-1558980664-769d59546b3d?w=800&q=80',
-    source: 'RideApart',
-    date: '2025-01-07',
-    category: 'Racing'
-  },
-  {
-    id: 3,
-    title: 'Electric Revolution: Ultraviolette F77 Mach 2 Review',
-    excerpt: 'India\'s fastest electric superbike pushes boundaries with 307 km range and lightning-fast acceleration.',
-    image: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800&q=80',
-    source: 'BikeNews',
-    date: '2025-01-06',
-    category: 'Electric'
-  }
-];
-
-// Mock brand collabs
-const BRAND_PARTNERS = [
-  { name: 'Royal Enfield', logo: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=200&q=80' },
-  { name: 'Kawasaki', logo: 'https://images.unsplash.com/photo-1558980663-3685c1d673c4?w=200&q=80' },
-  { name: 'KTM', logo: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=200&q=80' },
-  { name: 'BMW Motorrad', logo: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=200&q=80' },
-  { name: 'Harley-Davidson', logo: 'https://images.unsplash.com/photo-1558980664-1db506751c6c?w=200&q=80' },
-];
+// Landing Page Components
+import { HeroSection } from '@/components/landing/hero-section';
+import { EventsSection } from '@/components/landing/events-section';
+import { NewsSection } from '@/components/landing/news-section';
+import { FeaturesSection } from '@/components/landing/features-section';
+import { PartnersSection } from '@/components/landing/partners-section';
+import { CTASection } from '@/components/landing/cta-section';
 
 export default function App() {
   const { darkMode } = useTheme();
@@ -111,9 +73,6 @@ export default function App() {
   });
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [adminStats, setAdminStats] = useState<any>(null);
-
-  // Toggle dark mode logic removed (handled globally)
-  // User fetching logic removed (handled globally)
 
   const fetchStories = async () => {
     try {
@@ -459,12 +418,9 @@ export default function App() {
     }
   };
 
-  // Load dark mode preference - fix hydration error
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Token effect removed (handled globally)
 
   useEffect(() => {
     if (token) {
@@ -476,7 +432,6 @@ export default function App() {
     }
   }, [token]);
 
-  // Prevent hydration mismatch
   if (!mounted) {
     return <div className="min-h-screen bg-gradient-to-br from-stone-200 via-amber-50 to-stone-100" />;
   }
@@ -487,297 +442,12 @@ export default function App() {
       <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-zinc-950 via-red-950/30 to-zinc-950' : 'bg-gradient-to-br from-stone-200 via-amber-50 to-stone-100'}`}>
         <Toaster />
 
-        {/* Navigation */}
-
-
-        {/* Hero Section */}
-        <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-          {/* Video Background */}
-          <VideoBackground
-            videoSrc="/landingpagevideo.mp4"
-            overlayOpacity={darkMode ? 0.7 : 0.6}
-            className="z-0"
-          />
-
-          {/* Parallax Gradient Overlay */}
-          <ParallaxSection speed={0.3} className="absolute inset-0 pointer-events-none z-10">
-            <div className={`absolute inset-0 ${darkMode ? 'bg-gradient-to-br from-red-950/30 via-transparent to-amber-950/30' : 'bg-gradient-to-br from-blue-100/20 via-transparent to-red-100/20'}`} />
-          </ParallaxSection>
-
-          {/* Dot Pattern Overlay */}
-          <div className="absolute inset-0 pointer-events-none z-10" style={{
-            backgroundImage: darkMode
-              ? 'radial-gradient(circle at 2px 2px, rgba(251, 191, 36, 0.05) 1px, transparent 0)'
-              : 'radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.08) 1px, transparent 0)',
-            backgroundSize: '40px 40px'
-          }} />
-
-          <div className="relative z-20 text-center px-4 max-w-6xl">
-            <ScrollReveal direction="down" scale blur>
-              <div className="mb-8">
-                <ParallaxMouse strength={15}>
-                  <FloatingElement duration={4} yOffset={15}>
-                    <div className={`w-40 h-40 rounded-full overflow-hidden border-4 mx-auto mb-8 shadow-2xl ${darkMode ? 'bg-amber-900/20 border-amber-600 shadow-amber-900/50' : 'bg-stone-100 border-blue-500 shadow-blue-900/50'}`}>
-                      <img src={LOGO_URL} alt="The Moto Saga" className="w-full h-full object-cover" />
-                    </div>
-                  </FloatingElement>
-                </ParallaxMouse>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.2} scale>
-              <h1 className={`text-4xl md:text-8xl font-black mb-6 tracking-tight leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
-                THE PULSE OF <span className={`bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}> MOTORCYCLING</span>
-              </h1>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.4}>
-              <div className="max-w-3xl mx-auto space-y-4 mb-12">
-                <p className={`text-lg md:text-3xl font-light ${darkMode ? 'text-amber-100' : 'text-stone-700'}`}>
-                  Your journey. Your stories. Your tribe.
-                </p>
-                <p className={`text-base md:text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                  The ultimate digital home for every rider. Connect, share, and ride as one.
-                </p>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.6} scale>
-              <div className="flex gap-4 justify-center flex-wrap">
-                <Button
-                  size="lg"
-                  className={`font-bold px-6 py-6 md:px-10 md:py-7 text-lg md:text-xl font-black uppercase shadow-xl transition-all hover:scale-105 ${darkMode ? 'bg-gradient-to-r from-amber-600 to-blue-700 hover:from-amber-700 hover:to-blue-800 shadow-amber-900/50' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-900/50'} text-white`}
-                  onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
-                >
-                  Start Your Saga <ChevronRight className="ml-2" />
-                </Button>
-              </div>
-            </ScrollReveal>
-          </div>
-        </div>
-
-        {/* Latest Events Section */}
-        <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-red-950/20 border-amber-900/30' : 'bg-gradient-to-br from-stone-100 to-amber-50 border-stone-300/50'}`}>
-          <div className="max-w-7xl mx-auto">
-            <ScrollReveal direction="up" scale>
-              <div className="flex items-center justify-between mb-12">
-                <div>
-                  <h2 className={`text-5xl font-black mb-2 uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Upcoming Events</h2>
-                  <p className={`text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>Join the rides and meetups</p>
-                </div>
-                <div className="hidden md:flex items-center gap-3">
-                  <Link href="/events" legacyBehavior>
-                    <Button className="bg-gradient-to-r from-blue-600 to-red-600 text-white font-bold">See all events</Button>
-                  </Link>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {events.slice(0, 3).length > 0 ? events.slice(0, 3).map((event, idx) => (
-                <ScrollReveal key={event.id} direction="up" delay={idx * 0.15} scale blur>
-                  <Card className={`overflow-hidden transition-all group shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-red-950/30 border-amber-900/50 hover:border-amber-600' : 'bg-white border-stone-300/50 hover:border-blue-500'}`}>
-                    {event.imageUrl && (
-                      <div className="aspect-video bg-stone-800 relative overflow-hidden">
-                        <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        <Badge className="absolute top-4 right-4 bg-red-600 text-white uppercase font-bold">
-                          {event.eventType}
-                        </Badge>
-                      </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle className="text-xl text-white">{event.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
-                        <Calendar className="w-4 h-4" />
-                        {new Date(event.date).toLocaleDateString('en-IN')}
-                      </div>
-                      <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
-                        <MapPin className="w-4 h-4" />
-                        {event.location}
-                      </div>
-                      <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
-                        <Users className="w-4 h-4" />
-                        {event.rsvpCount || 0} attending
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
-                        className={`w-full font-bold text-white ${darkMode ? 'bg-gradient-to-r from-amber-600 to-red-700 hover:from-amber-700 hover:to-red-800' : 'bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700'}`}
-                      >
-                        RSVP Now
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </ScrollReveal>
-              )) : (
-                <div className="col-span-3 text-center py-16">
-                  <Calendar className="w-16 h-16 text-stone-600 mx-auto mb-4" />
-                  <p className="text-stone-400 text-lg">No events scheduled yet. Check back soon!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Featured News Section */}
-        <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-amber-950/20 border-amber-900/30' : 'bg-gradient-to-br from-amber-50 to-stone-100 border-stone-300/50'}`}>
-          <div className="max-w-7xl mx-auto">
-            <ScrollReveal direction="left" scale>
-              <div className="flex items-center gap-3 mb-12">
-                <FloatingElement duration={3} yOffset={10}>
-                  <Newspaper className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
-                </FloatingElement>
-                <div>
-                  <h2 className={`text-4xl font-black uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Latest Moto News</h2>
-                  <p className={darkMode ? 'text-zinc-400' : 'text-stone-600'}>Stay updated with the riding world</p>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {MOCK_NEWS.map((news, idx) => (
-                <ScrollReveal key={news.id} direction="up" delay={idx * 0.1} scale>
-                  <Card className={`overflow-hidden transition-all group shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-amber-950/30 border-amber-900/50 hover:border-red-600' : 'bg-white border-stone-300/50 hover:border-red-500'}`}>
-                    <div className="aspect-video bg-stone-800 relative overflow-hidden">
-                      <img src={news.image} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      <Badge className="absolute top-4 right-4 bg-blue-600 text-white text-xs">
-                        {news.category}
-                      </Badge>
-                    </div>
-                    <CardHeader>
-                      <div className="flex items-center gap-2 text-xs text-stone-500 mb-2">
-                        <span>{news.source}</span>
-                        <span>•</span>
-                        <span>{new Date(news.date).toLocaleDateString()}</span>
-                      </div>
-                      <CardTitle className={`text-lg leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>{news.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>{news.excerpt}</p>
-                    </CardContent>
-                    <CardFooter>
-                      <Button variant="ghost" className={`p-0 ${darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-blue-400 hover:text-blue-300'}`}>
-                        Read More <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Features Section */}
-        <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-red-950/20 border-amber-900/30' : 'bg-gradient-to-br from-stone-200 to-amber-100 border-stone-300/50'}`}>
-          <div className="max-w-7xl mx-auto">
-            <ScrollReveal direction="up" scale blur>
-              <h2 className={`text-5xl font-black text-center mb-4 uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Experience</h2>
-              <h3 className={`text-3xl font-light text-center mb-20 bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}>The Digital Revolution</h3>
-            </ScrollReveal>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              <ScrollReveal direction="left" delay={0.1} scale>
-                <div className="group">
-                  <ParallaxMouse strength={10}>
-                    <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-amber-950/50 to-zinc-900 border-2 border-amber-800/50 hover:border-amber-600' : 'bg-gradient-to-br from-blue-100 to-white border-2 border-blue-300/50 hover:border-blue-500'}`}>
-                      <FloatingElement duration={3.5} yOffset={12}>
-                        <Sparkles className={`w-16 h-16 mb-6 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
-                      </FloatingElement>
-                      <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Chronicle Your Rides</h3>
-                      <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                        Create your digital garage. Document every mile, every turn, and every memory in high fidelity.
-                      </p>
-                    </div>
-                  </ParallaxMouse>
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal direction="up" delay={0.2} scale>
-                <div className="group">
-                  <ParallaxMouse strength={10}>
-                    <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-red-950/50 to-zinc-900 border-2 border-red-800/50 hover:border-red-600' : 'bg-gradient-to-br from-red-100 to-white border-2 border-red-300/50 hover:border-red-500'}`}>
-                      <FloatingElement duration={4} yOffset={15}>
-                        <Calendar className={`w-16 h-16 mb-6 ${darkMode ? 'text-red-500' : 'text-red-600'}`} />
-                      </FloatingElement>
-                      <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Ride Together</h3>
-                      <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                        Find your next adventure. From breakfast runs to cross-country expeditions, never ride alone again.
-                      </p>
-                    </div>
-                  </ParallaxMouse>
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal direction="right" delay={0.3} scale>
-                <div className="group">
-                  <ParallaxMouse strength={10}>
-                    <div className={`rounded-2xl p-8 h-full transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-800/50 to-zinc-900 border-2 border-zinc-700/50 hover:border-amber-500' : 'bg-gradient-to-br from-stone-100 to-white border-2 border-stone-300/50 hover:border-stone-500'}`}>
-                      <FloatingElement duration={3} yOffset={10}>
-                        <Users className={`w-16 h-16 mb-6 ${darkMode ? 'text-amber-400' : 'text-stone-700'}`} />
-                      </FloatingElement>
-                      <h3 className={`text-2xl font-black mb-4 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Find Your Pack</h3>
-                      <p className={`leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
-                        Connect with riders who share your machine and your mindset. Build your tribe, locally and globally.
-                      </p>
-                    </div>
-                  </ParallaxMouse>
-                </div>
-              </ScrollReveal>
-            </div>
-          </div>
-        </div>
-
-        {/* Brand Partnerships Section */}
-        <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-zinc-950 to-amber-950/20 border-amber-900/30' : 'bg-gradient-to-br from-stone-100 to-amber-50 border-stone-300/50'}`}>
-          <div className="max-w-7xl mx-auto">
-            <ScrollReveal direction="up" scale>
-              <div className="flex items-center gap-3 justify-center mb-12">
-                <FloatingElement duration={3.5} yOffset={12}>
-                  <Handshake className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-blue-600'}`} />
-                </FloatingElement>
-                <h2 className={`text-4xl font-black uppercase tracking-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Brand Partners</h2>
-              </div>
-              <p className={`text-center mb-12 text-lg ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>Collaborating with India's leading motorcycle brands</p>
-            </ScrollReveal>
-
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-              {BRAND_PARTNERS.map((brand, idx) => (
-                <ScrollReveal key={idx} direction="up" delay={idx * 0.1} scale>
-                  <div className="group">
-                    <div className={`rounded-xl p-6 h-32 flex items-center justify-center transition-all hover:shadow-xl shadow-lg ${darkMode ? 'bg-gradient-to-br from-zinc-900 to-amber-950/30 border-2 border-amber-800/50 hover:border-amber-600' : 'bg-white border-2 border-stone-300/50 hover:border-blue-500'}`}>
-                      <div className={`w-24 h-24 rounded-lg overflow-hidden border ${darkMode ? 'bg-zinc-800 border-zinc-700' : 'bg-stone-100 border-stone-300'}`}>
-                        <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    </div>
-                    <p className={`text-center text-sm mt-3 font-medium ${darkMode ? 'text-zinc-400' : 'text-stone-700'}`}>{brand.name}</p>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className={`py-24 px-4 border-t ${darkMode ? 'bg-gradient-to-br from-red-950/30 via-zinc-950 to-amber-950/30 border-amber-900/30' : 'bg-gradient-to-br from-blue-100/50 via-stone-50 to-red-100/50 border-stone-300/50'}`}>
-          <div className="max-w-4xl mx-auto text-center">
-            <ScrollReveal direction="up" scale blur>
-              <h2 className={`text-5xl font-black mb-6 uppercase ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>The Road is Calling</h2>
-              <p className={`text-xl mb-10 ${darkMode ? 'text-zinc-400' : 'text-stone-700'}`}>Join thousands of riders documenting their journey on The Moto Saga</p>
-            </ScrollReveal>
-            <ScrollReveal direction="up" delay={0.2} scale>
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-red-600 hover:from-blue-700 hover:to-red-700 text-white px-12 py-8 text-2xl font-black uppercase shadow-2xl shadow-blue-900/50 transition-all hover:scale-105"
-                onClick={() => { setAuthMode('signup'); setShowAuthDialog(true); }}
-              >
-                Join The Saga Now
-              </Button>
-            </ScrollReveal>
-          </div>
-        </div>
+        <HeroSection onSignup={() => { setAuthMode('signup'); setShowAuthDialog(true); }} />
+        <EventsSection events={events} onSignup={() => { setAuthMode('signup'); setShowAuthDialog(true); }} />
+        <NewsSection />
+        <FeaturesSection />
+        <PartnersSection />
+        <CTASection onSignup={() => { setAuthMode('signup'); setShowAuthDialog(true); }} />
 
         {/* Auth Dialog */}
         <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
@@ -877,7 +547,7 @@ export default function App() {
     );
   }
 
-  // Main App for authenticated users - CONTINUED IN PART 2
+  // Main App for authenticated users
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-zinc-950 via-red-950/30 to-zinc-950' : 'bg-gradient-to-br from-stone-200 via-amber-50 to-stone-100'}`}>
       <Toaster />
@@ -917,20 +587,20 @@ export default function App() {
                 Events
               </Button>
 
-              {/* ABOUT & CONTACT LINKS ADDED */}
-              <Link href="/About" legacyBehavior>
+              {/* ABOUT & CONTACT LINKS */}
+              <Link href="/about" legacyBehavior>
                 <Button variant="ghost" size="sm" className="ml-2 font-semibold hidden md:inline-flex">
                   About Us
                 </Button>
               </Link>
 
-              <Link href="/Contact" legacyBehavior>
+              <Link href="/contact" legacyBehavior>
                 <Button variant="ghost" size="sm" className="ml-2 font-semibold hidden md:inline-flex">
                   Contact
                 </Button>
               </Link>
 
-              {/* EVENTS LINK ADDED - takes user to full events page */}
+              {/* EVENTS LINK */}
               <Link href="/events" legacyBehavior>
                 <Button variant="ghost" size="sm" className="ml-2 font-semibold hidden md:inline-flex">
                   Events
@@ -940,8 +610,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
-
-
             {user.role === 'admin' && (
               <Button
                 variant="outline"

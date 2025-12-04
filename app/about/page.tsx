@@ -11,7 +11,7 @@ import { ScrollReveal } from '@/components/parallax/scroll-reveal';
 import { FloatingElement } from '@/components/parallax/floating-element';
 import { useTheme } from '@/components/providers/theme-provider';
 
-const LOGO_URL = 'https://customer-assets.emergentagent.com/job_motocommunity/artifacts/tt95bhwq_image.png';
+import { LOGO_URL } from '@/lib/mock-data';
 
 export default function AboutTheMotoSaga() {
   const { darkMode } = useTheme();
