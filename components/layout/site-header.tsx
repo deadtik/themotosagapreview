@@ -42,7 +42,7 @@ export function SiteHeader() {
                         variant="ghost"
                         className={`font-semibold ${darkMode ? 'text-amber-100 hover:text-amber-400' : 'text-stone-700 hover:text-blue-600'}`}
                     >
-                        <Link href="/About">
+                        <Link href="/about">
                             About Us
                         </Link>
                     </Button>
@@ -52,7 +52,7 @@ export function SiteHeader() {
                         variant="ghost"
                         className={`font-semibold ${darkMode ? 'text-amber-100 hover:text-amber-400' : 'text-stone-700 hover:text-blue-600'}`}
                     >
-                        <Link href="/Contact">
+                        <Link href="/contact">
                             Contact
                         </Link>
                     </Button>
@@ -136,10 +136,10 @@ export function SiteHeader() {
 
                         {/* Menu Items */}
                         <div className="flex-1 flex flex-col items-center justify-center gap-8 p-8 animate-in fade-in slide-in-from-bottom-10 duration-300">
-                            <Link href="/About" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Link href="/about" onClick={() => setIsMobileMenuOpen(false)}>
                                 <span className={`text-3xl font-black uppercase tracking-tight hover:scale-110 transition-transform block ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>About Us</span>
                             </Link>
-                            <Link href="/Contact" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
                                 <span className={`text-3xl font-black uppercase tracking-tight hover:scale-110 transition-transform block ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>Contact</span>
                             </Link>
                             <Link href="/events" onClick={() => setIsMobileMenuOpen(false)}>
