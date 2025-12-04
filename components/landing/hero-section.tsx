@@ -53,17 +53,17 @@ export function HeroSection({ onSignup }: HeroSectionProps) {
                 </ScrollReveal>
 
                 <ScrollReveal direction="up" delay={0.2} scale>
-                    <h1 className={`text-4xl md:text-8xl font-black mb-6 tracking-tight leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-900'}`}>
-                        THE PULSE OF <span className={`bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-600 to-red-600'}`}> MOTORCYCLING</span>
+                    <h1 className={`text-4xl md:text-8xl font-black mb-6 tracking-tight leading-tight ${darkMode ? 'text-amber-50' : 'text-stone-100'}`}>
+                        THE PULSE OF <span className={`bg-gradient-to-r bg-clip-text text-transparent ${darkMode ? 'from-amber-400 to-red-500' : 'from-blue-400 to-red-500'}`}> MOTORCYCLING</span>
                     </h1>
                 </ScrollReveal>
 
                 <ScrollReveal direction="up" delay={0.4}>
                     <div className="max-w-3xl mx-auto space-y-4 mb-12">
-                        <p className={`text-lg md:text-3xl font-light ${darkMode ? 'text-amber-100' : 'text-stone-700'}`}>
+                        <p className={`text-lg md:text-3xl font-light ${darkMode ? 'text-amber-100' : 'text-stone-200'}`}>
                             Your journey. Your stories. Your tribe.
                         </p>
-                        <p className={`text-base md:text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-600'}`}>
+                        <p className={`text-base md:text-xl ${darkMode ? 'text-zinc-400' : 'text-stone-300'}`}>
                             The ultimate digital home for every rider. Connect, share, and ride as one.
                         </p>
                     </div>

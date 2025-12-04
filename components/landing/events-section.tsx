@@ -46,7 +46,7 @@ export function EventsSection({ events, onSignup }: EventsSectionProps) {
                                     </div>
                                 )}
                                 <CardHeader>
-                                    <CardTitle className="text-xl text-white">{event.title}</CardTitle>
+                                    <CardTitle className={`text-xl ${darkMode ? 'text-white' : 'text-stone-900'}`}>{event.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-2">
                                     <div className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-blue-600'}`}>
